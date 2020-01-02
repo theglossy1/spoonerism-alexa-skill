@@ -6,6 +6,7 @@ Swap the first set and the last set
 """
 
 import sys
+import requests, io
 import eng_to_ipa as ipa
 
 def consonant_cluster(word):
@@ -21,10 +22,10 @@ def consonant_cluster(word):
 # sentence = "i am funny"
 
 VOWELS = "iyɨʉɯuɪʏʊeøɘɵɤoəɛœɜɞʌɔæɐaɶɑɒ"
+SWEARS = requests.get('http://www.bannedwordlist.com/lists/swearWords.txt').content.decode().split('\r\n')
 
-def spoonerify(sentence, return_ipa=False):
-    sentence_ipa = ipa.convert(sentence)
-    sentence_list = sentence_ipa.split()
+def spoonerify(sentence):
+    sentence_list = sentence.split()
     first_word = sentence_list[0]
     final_word = sentence_list[-1]
     middle_words = sentence_list[1:-1]
@@ -36,15 +37,30 @@ def spoonerify(sentence, return_ipa=False):
     final_word = first_word_list[0] + final_word_list[1]
 
     result = ' '.join((first_word, ' '.join(middle_words), final_word))
-    if return_ipa:
-        result = (sentence_ipa, result)
     return result
 
 def ssmlify(sentence):
     res = '<speak>\n'
+    swear_data = """<phoneme alphabet="ipa" ph="%s"/>
+<say-as interpret-as="expletive">%s</say-as>
+<phoneme alphabet="ipa" ph="%s"/>"""
+    data = '<phoneme alphabet="ipa" ph="%s"/>'
     spoonerism = spoonerify(sentence)
-    data = f'<phoneme alphabet="ipa" ph="{spoonerism}"/>\n</speak>'
-    return res + data
+    spoonerism_ipa = spoonerify(ipa.convert(sentence))
+    splitted = spoonerism.split()
+    splitted_ipa = spoonerism_ipa.split()
+    for (i, word) in enumerate(splitted_ipa):
+        original = splitted[i]
+        if original.lower() in SWEARS:
+            res += swear_data % (word[0], original[0:-2]+original[-1], word[-1])
+            continue
+        if word[-1] != '*':
+            res += data % word
+        else:
+            res += word[:-1]
+        res += '\n'
+    res += '</speak>\n'
+    return res
 
     # The following works very well for "bleeping out" the middle of a censored word (e.g., the shi-word)
     # we should make a dictionary of IPA words (just two for now)
@@ -55,16 +71,9 @@ def ssmlify(sentence):
     # </speak>
     # See: https://developer.amazon.com/it-IT/docs/alexa/custom-skills/speech-synthesis-markup-language-ssml-reference.html
 
-    # This is Josiah's previous stuff:
-    # splitted = spoonerism.split()
-    # for word in splitted:
-    #     if word[-1] != '*':
-    #         res += data % word
-    #     else:
-    #         res += word[:-1]
-    #     res += '\n'
-    # res += '</speak>\n'
-    # return res
+    # This is Matt's previous stuff:
+    # data = '<phoneme alphabet="ipa" ph="{spoonerism}"/>\n</speak>'
+    # return res + data
 
 if __name__ == '__main__':
     sentence = ' '.join(sys.argv[1:])
