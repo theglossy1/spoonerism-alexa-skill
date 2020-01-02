@@ -1,2 +1,3 @@
 # spoonerism-alexa-skill
- 
+
+This converts two or more words spoken to Amazon Alexa to a [Spoonerism](https://en.wikipedia.org/wiki/Spoonerism). In order to avoid mispronunciation, it first converts the words to IPA (International Phonetic Alphabet) using the [English-to-IPA](https://github.com/mphilli/English-to-IPA) repository. It then swaps the first consonant cluster of the first word with the first consonant cluster of the final word. It outputs in [SSML](https://developer.amazon.com/en-US/docs/alexa/custom-skills/speech-synthesis-markup-language-ssml-reference.html). Sometimes spoonerisms result in expletives. In this case, it will utilize the "expletive" *say-as* tag for maximum amusement.
