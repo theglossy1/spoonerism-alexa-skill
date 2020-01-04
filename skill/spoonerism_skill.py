@@ -47,7 +47,7 @@ class HelpIntentHandler(AbstractRequestHandler):
         speech_text = "You can tell me words that I should spoonerify."
 
         handler_input.response_builder.speak(speech_text).ask(speech_text).set_card(
-            SimpleCard("Spoonerism Maker", speech_text)).set_should_end_session(True)
+            SimpleCard("Spoonerism Maker", speech_text)).set_should_end_session(False)
         return handler_input.response_builder.response
 
 class ValueIntentHandler(AbstractRequestHandler):

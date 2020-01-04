@@ -17,7 +17,7 @@ def consonant_cluster(word):
         else:
             res.append(word[i:])
             break
-    return res
+    return tuple(res)
 
 # sentence = "i am funny"
 
@@ -30,8 +30,8 @@ def spoonerify(sentence):
     final_word = sentence_list[-1]
     middle_words = sentence_list[1:-1]
 
-    first_word_list = consonant_cluster(first_word)
-    final_word_list = consonant_cluster(final_word)
+    first_word_list = list(consonant_cluster(first_word))
+    final_word_list = list(consonant_cluster(final_word))
 
     first_word = final_word_list[0] + first_word_list[1]
     final_word = first_word_list[0] + final_word_list[1]
@@ -44,7 +44,8 @@ def ssmlify(sentence):
     swear_data = """<phoneme alphabet="ipa" ph="%s"/>
 <say-as interpret-as="expletive">%s</say-as>
 <phoneme alphabet="ipa" ph="%s"/>"""
-    data = '<phoneme alphabet="ipa" ph="%s"/>'
+    data = '<phoneme alphabet="ipa" ph="%s">%s</phoneme>'
+    data_original = '<phoneme alphabet="ipa" ph="%s"/>%s'
     spoonerism = spoonerify(sentence)
     spoonerism_ipa = spoonerify(ipa.convert(sentence))
     splitted = spoonerism.split()
@@ -55,9 +56,10 @@ def ssmlify(sentence):
             res += swear_data % (word[0], original[0:-2]+original[-1], word[-1])
             continue
         if word[-1] != '*':
-            res += data % word
+            res += data % (word, original)
         else:
-            res += word[:-1]
+            word = word[:-1]
+            res += data_original % consonant_cluster(word)
         res += '\n'
     res += '</speak>\n'
     return res
