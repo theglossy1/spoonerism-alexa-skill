@@ -17,11 +17,13 @@ def consonant_cluster(word):
         else:
             res.append(word[i:])
             break
+    else: res.append('')
     return tuple(res)
 
 # sentence = "i am funny"
 
 VOWELS = "iyɨʉɯuɪʏʊeøɘɵɤoəɛœɜɞʌɔæɐaɶɑɒ"
+VOWELS += VOWELS.upper()
 SWEARS = requests.get('http://www.bannedwordlist.com/lists/swearWords.txt').content.decode().split('\r\n')
 
 def spoonerify(sentence):
