@@ -8,6 +8,7 @@ Swap the first set and the last set
 import sys
 import requests, io
 import eng_to_ipa as ipa
+from zipfile import ZipFile
 
 def consonant_cluster(word):
     res = ['']
@@ -20,11 +21,11 @@ def consonant_cluster(word):
     else: res.append('')
     return tuple(res)
 
-# sentence = "i am funny"
-
 VOWELS = "iyɨʉɯuɪʏʊeøɘɵɤoəɛœɜɞʌɔæɐaɶɑɒ"
 VOWELS += VOWELS.upper()
-SWEARS = requests.get('http://www.bannedwordlist.com/lists/swearWords.txt').content.decode().split('\r\n')
+SWEARS = []
+def init():
+    SWEARS[:] = ZipFile('swear_list.zip').open('swear_list.txt', pwd=b'openZipUp').read().decode().split('\r\n')
 
 def spoonerify(sentence):
     sentence_list = sentence.split()
@@ -45,7 +46,7 @@ def ssmlify(sentence):
     res = '<speak>\n'
     swear_data = """<phoneme alphabet="ipa" ph="%s"/>
 <say-as interpret-as="expletive">%s</say-as>
-<phoneme alphabet="ipa" ph="%s"/>"""
+<phoneme alphabet="ipa" ph="%s"/>\n"""
     data = '<phoneme alphabet="ipa" ph="%s">%s</phoneme>'
     data_original = '<phoneme alphabet="ipa" ph="%s"/>%s'
     spoonerism = spoonerify(sentence)
@@ -55,7 +56,7 @@ def ssmlify(sentence):
     for (i, word) in enumerate(splitted_ipa):
         original = splitted[i]
         if original.lower() in SWEARS:
-            res += swear_data % (word[0], original[0:-2]+original[-1], word[-1])
+            res += swear_data % (consonant_cluster(word)[0], original[:-2], word[-1])
             continue
         if word[-1] != '*':
             res += data % (word, original)
@@ -80,6 +81,7 @@ def ssmlify(sentence):
     # return res + data
 
 if __name__ == '__main__':
+    init()
     sentence = ' '.join(sys.argv[1:])
     result = ssmlify(sentence)
     print(result)
