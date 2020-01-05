@@ -8,6 +8,7 @@ Swap the first set and the last set
 import sys
 import requests, io
 import eng_to_ipa as ipa
+from zipfile import ZipFile
 
 def consonant_cluster(word):
     res = ['']
@@ -17,18 +18,29 @@ def consonant_cluster(word):
         else:
             res.append(word[i:])
             break
+    else: res.append('')
     return tuple(res)
 
-# sentence = "i am funny"
-
 VOWELS = "iyɨʉɯuɪʏʊeøɘɵɤoəɛœɜɞʌɔæɐaɶɑɒ"
-SWEARS = requests.get('http://www.bannedwordlist.com/lists/swearWords.txt').content.decode().split('\r\n')
+VOWELS += VOWELS.upper()
+SWEARS = []
+def init():
+    SWEARS[:] = ZipFile('swear_list.zip').open('swear_list.txt', pwd=b'openZipUp').read().decode().split('\r\n')
 
 def spoonerify(sentence):
     sentence_list = sentence.split()
-    first_word = sentence_list[0]
-    final_word = sentence_list[-1]
-    middle_words = sentence_list[1:-1]
+    if len(sentence_list) == 0:
+        # pseudocode: if the "sentence" is only 1 word, break it up according to the following rules:
+        #  if it's only 1 syllable, pass
+        #  else if it hits a [ˌ'] character (unless [ˌ'] is the first or second position), split the word on that, with ˌ or ' going on end of 1st word
+        #     if there's a vowel right after ' then copy the previous consonant (e.g., "ˌsɪndərˈɛlə" becomes "ˌsɪndərˈ rɛlə" spoonerizes to "ˌrɪndərˈ sɛlə")
+        #  else if it hits a consonant (after the first one or after the beginning of line), take that consonant as part of the second word
+        #  re-combine words for prounciation
+        pass
+    else:
+        first_word = sentence_list[0]
+        final_word = sentence_list[-1]
+        middle_words = sentence_list[1:-1]
 
     first_word_list = list(consonant_cluster(first_word))
     final_word_list = list(consonant_cluster(final_word))
@@ -43,17 +55,20 @@ def ssmlify(sentence):
     res = '<speak>\n'
     swear_data = """<phoneme alphabet="ipa" ph="%s"/>
 <say-as interpret-as="expletive">%s</say-as>
-<phoneme alphabet="ipa" ph="%s"/>"""
+<phoneme alphabet="ipa" ph="%s"/>\n"""
     data = '<phoneme alphabet="ipa" ph="%s">%s</phoneme>'
     data_original = '<phoneme alphabet="ipa" ph="%s"/>%s'
     spoonerism = spoonerify(sentence)
     spoonerism_ipa = spoonerify(ipa.convert(sentence))
     splitted = spoonerism.split()
     splitted_ipa = spoonerism_ipa.split()
+    broken = False
     for (i, word) in enumerate(splitted_ipa):
+        # if broken: res += '<break strength="none"/>\n'
+        # else: broken = True
         original = splitted[i]
         if original.lower() in SWEARS:
-            res += swear_data % (word[0], original[0:-2]+original[-1], word[-1])
+            res += swear_data % (consonant_cluster(word)[0], original[:-2], word[-1])
             continue
         if word[-1] != '*':
             res += data % (word, original)
@@ -78,6 +93,7 @@ def ssmlify(sentence):
     # return res + data
 
 if __name__ == '__main__':
+    init()
     sentence = ' '.join(sys.argv[1:])
     result = ssmlify(sentence)
     print(result)

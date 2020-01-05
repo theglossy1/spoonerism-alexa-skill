@@ -62,7 +62,10 @@ def ssmlify(sentence):
     spoonerism_ipa = spoonerify(ipa.convert(sentence))
     splitted = spoonerism.split()
     splitted_ipa = spoonerism_ipa.split()
+    broken = False
     for (i, word) in enumerate(splitted_ipa):
+        # if broken: res += '<break strength="none"/>\n'
+        # else: broken = True
         original = splitted[i]
         if original.lower() in SWEARS:
             res += swear_data % (consonant_cluster(word)[0], original[:-2], word[-1])
