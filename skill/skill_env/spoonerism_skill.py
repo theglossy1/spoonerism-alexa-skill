@@ -4,6 +4,7 @@ from ask_sdk_core.handler_input import HandlerInput
 from ask_sdk_model import Response
 from ask_sdk_model.ui import SimpleCard
 from ask_sdk_model.ui.ssml_output_speech import SsmlOutputSpeech
+from ask_sdk_model.ui.plain_text_output_speech import PlainTextOutputSpeech
 from spoonerisms import ssmlify, spoonerify, init as spoinit
 
 # from ask_sdk_webservice_support.webservice_handler import WebserviceSkillHandler
@@ -72,12 +73,14 @@ class ValueIntentHandler(AbstractRequestHandler):
             session_attr['initialized'] = None
         ssml = ssmlify(sentence)
         if reprompt:
-            ssml = '\n'.join(ssml.split('\n')[:-2])
-            ssml += '\n<break strength="x-strong"/>\nWould you like to do another?\n</speak>'
+            reprompt = PlainTextOutputSpeech(text='Would you like to do another?')
+        else:
+            reprompt = None
         plain_text = spoonerify(sentence)
 
         return Response(SsmlOutputSpeech(ssml=ssml), SimpleCard("Spoonerism Maker", plain_text),
-            should_end_session=False, reprompt=reprompt)
+            should_end_session=True)
+            # should_end_session=False, reprompt=reprompt)
 
 class AllExceptionHandler(AbstractExceptionHandler):
 

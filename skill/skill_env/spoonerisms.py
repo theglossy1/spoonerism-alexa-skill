@@ -52,7 +52,7 @@ def spoonerify(sentence):
     return result
 
 def ssmlify(sentence):
-    res = '<speak>\n'
+    res = '<speak><prosody rate="slow">\n'
     swear_data = """<phoneme alphabet="ipa" ph="%s"/>
 <say-as interpret-as="expletive">%s</say-as>
 <phoneme alphabet="ipa" ph="%s"/>\n"""
@@ -64,19 +64,22 @@ def ssmlify(sentence):
     splitted_ipa = spoonerism_ipa.split()
     broken = False
     for (i, word) in enumerate(splitted_ipa):
-        # if broken: res += '<break strength="none"/>\n'
-        # else: broken = True
         original = splitted[i]
         if original.lower() in SWEARS:
             res += swear_data % (consonant_cluster(word)[0], original[:-2], word[-1])
             continue
-        if word[-1] != '*':
-            res += data % (word, original)
+        if not (i < len(splitted) - 1 and i > 0):
+            if word[-1] != '*':
+                res += data % (word, original)
+            else:
+                word = word[:-1]
+                res += data_original % consonant_cluster(word)
         else:
-            word = word[:-1]
-            res += data_original % consonant_cluster(word)
+            res += original
+        if i < len(splitted) - 1:
+            res += '<break strength="x-weak"/>'
         res += '\n'
-    res += '</speak>\n'
+    res += '</prosody></speak>\n'
     return res
 
     # The following works very well for "bleeping out" the middle of a censored word (e.g., the shi-word)
