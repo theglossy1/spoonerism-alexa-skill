@@ -29,9 +29,18 @@ def init():
 
 def spoonerify(sentence):
     sentence_list = sentence.split()
-    first_word = sentence_list[0]
-    final_word = sentence_list[-1]
-    middle_words = sentence_list[1:-1]
+    if len(sentence_list) == 0:
+        # pseudocode: if the "sentence" is only 1 word, break it up according to the following rules:
+        #  if it's only 1 syllable, pass
+        #  else if it hits a [ˌ'] character (unless [ˌ'] is the first or second position), split the word on that, with ˌ or ' going on end of 1st word
+        #     if there's a vowel right after ' then copy the previous consonant (e.g., "ˌsɪndərˈɛlə" becomes "ˌsɪndərˈ rɛlə" spoonerizes to "ˌrɪndərˈ sɛlə")
+        #  else if it hits a consonant (after the first one or after the beginning of line), take that consonant as part of the second word
+        #  re-combine words for prounciation
+        pass
+    else:
+        first_word = sentence_list[0]
+        final_word = sentence_list[-1]
+        middle_words = sentence_list[1:-1]
 
     first_word_list = list(consonant_cluster(first_word))
     final_word_list = list(consonant_cluster(final_word))
