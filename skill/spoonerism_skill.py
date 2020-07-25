@@ -93,7 +93,7 @@ class AllExceptionHandler(AbstractExceptionHandler):
         # Log the exception in CloudWatch Logs
         print(exception)
 
-        speech = "Sorry, something went wrong, please try again."
+        speech = "Sorry, something went wrong, please try again later."
         handler_input.response_builder.speak(speech).ask(speech)
         return handler_input.response_builder.response
 
