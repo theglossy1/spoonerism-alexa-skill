@@ -18,9 +18,8 @@ def consonant_cluster(word):
             break
     return res
 
-# sentence = "i am funny"
-
 TRANSFORMS = {'a':'an'}
+CUSTOM_CONVERSIONS = {'to': 'uteɪ', 'too': 'uteɪ', 'two': 'uteɪ'}
 SKIPS = ['the','in','an','is','of']
 VOWELS = "iyɨʉɯuɪʏʊeøɘɵɤoəɛœɜɞʌɔæɐaɶɑɒ"
 VOWELS += VOWELS.upper()
@@ -30,6 +29,8 @@ def pigify(word):
         return ipa.convert(TRANSFORMS[word])
     if word in SKIPS:
         return ipa.convert(word)
+    elif word in CUSTOM_CONVERSIONS:
+        return CUSTOM_CONVERSIONS[word]
     else:
         #if word[-2:] == "'s":
         #    word = word[:-2]
@@ -41,31 +42,15 @@ def pigify(word):
 
 def ssmlify(sentence):
     res = '<speak>\n'
-    piglatined = pigify(sentence)
-    data = f'<phoneme alphabet="ipa" ph="{piglatined}"/>\n</speak>'
-    return res + data
-
-    # The following works very well for "bleeping out" the middle of a censored word (e.g., the shi-word)
-    # we should make a dictionary of IPA words (just two for now)
-    # <speak>
-    #  <phoneme alphabet="ipa" ph="ʃ"/>
-    #  <say-as interpret-as="expletive">shoot</say-as>
-    #  <phoneme alphabet="ipa" ph="t"/>
-    # </speak>
-    # See: https://developer.amazon.com/it-IT/docs/alexa/custom-skills/speech-synthesis-markup-language-ssml-reference.html
-
-    # This is Josiah's previous stuff:
-    # splitted = spoonerism.split()
-    # for word in splitted:
-    #     if word[-1] != '*':
-    #         res += data % word
-    #     else:
-    #         res += word[:-1]
-    #     res += '\n'
-    # res += '</speak>\n'
-    # return res
+    data = '<phoneme alphabet="ipa" ph="{piglatined}"/>\n'
+    word_list = sentence.split()
+    for (i,words) in enumerate(word_list):
+        piglatined = pigify(words)
+        res += data.format(piglatined=piglatined)
+    res += '</speak>'
+    return res
 
 if __name__ == '__main__':
-    word_list = ' '.join(sys.argv[1:]).split()
-    for (i,words) in enumerate(word_list):
-        print(pigify(words))
+    # word_list = ' '.join(sys.argv[1:]).split()
+    #     print(pigify(words))
+    print(ssmlify(' '.join(sys.argv[1:])))
